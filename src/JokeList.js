@@ -32,10 +32,12 @@ export default class JokeList extends Component {
           }
         });
         let newJoke = await res.data.id;
-        if(!this.seenJokes.has(newJoke)){
+        if (!this.seenJokes.has(newJoke)) {
           jokes.push({ text: res.data.joke, votes: 0, id: res.data.id });
           this.seenJokes.add(newJoke);
-        } else {console.log('found a duplicate')}
+        } else {
+          console.log("found a duplicate");
+        }
       }
       this.setState(
         prevState => ({
@@ -68,14 +70,15 @@ export default class JokeList extends Component {
   }
 
   render() {
-    if(this.state.loading) {
+    if (this.state.loading) {
       return (
         <div className="JokeList-spinner">
-          <i className="fas fa-8x fa-laugh fa-spin"></i>
+          <i className="fas fa-8x fa-laugh fa-spin" />
           <h1 className="JokeList-title">Loading...</h1>
         </div>
-      )
+      );
     }
+    let jokes = this.state.jokes.sort((a, b) => b.votes - a.votes);
     return (
       <div className="JokeList">
         <div className="JokeList-sidebar">
@@ -88,12 +91,12 @@ export default class JokeList extends Component {
             alt="Smiley face"
           />
           <button className="JokeList-getmore" onClick={this.handleClick}>
-            New Jokes
+            Fetch Jokes
           </button>
         </div>
 
         <div className="JokeList-jokes">
-          {this.state.jokes.map(joke => (
+          {jokes.map(joke => (
             <Joke
               votes={joke.votes}
               text={joke.text}
