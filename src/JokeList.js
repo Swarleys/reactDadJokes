@@ -11,12 +11,17 @@ export default class JokeList extends Component {
     super(props);
 
     this.state = {
-      jokes: []
+      jokes: JSON.parse(window.localStorage.getItem("jokes") || "[]")
     };
     this.handleVote = this.handleVote.bind(this);
+    this.handleClick = this.handleClick.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
+    if (this.state.jokes.length === 0) this.getJokes();
+  }
+
+  async getJokes() {
     let jokes = [];
     while (jokes.length < this.props.numJokesToGet) {
       let res = await axios.get("https://icanhazdadjoke.com", {
@@ -26,14 +31,29 @@ export default class JokeList extends Component {
       });
       jokes.push({ text: res.data.joke, votes: 0, id: res.data.id });
     }
-    this.setState({ jokes: jokes });
+    this.setState(
+      prevState => ({
+        jokes: [...prevState.jokes, ...jokes]
+      }),
+      () =>
+        window.localStorage.setItem("jokes", JSON.stringify(this.state.jokes))
+    );
   }
+
   handleVote(id, delta) {
-    this.setState(prevState => ({
-      jokes: prevState.jokes.map(joke =>
-        joke.id === id ? { ...joke, votes: joke.votes + delta } : joke
-      )
-    }));
+    this.setState(
+      prevState => ({
+        jokes: prevState.jokes.map(joke =>
+          joke.id === id ? { ...joke, votes: joke.votes + delta } : joke
+        )
+      }),
+      () =>
+        window.localStorage.setItem("jokes", JSON.stringify(this.state.jokes))
+    );
+  }
+
+  handleClick() {
+    this.getJokes();
   }
 
   render() {
@@ -48,7 +68,9 @@ export default class JokeList extends Component {
             src="https://assets.dryicons.com/uploads/icon/svg/8927/0eb14c71-38f2-433a-bfc8-23d9c99b3647.svg"
             alt="Smiley face"
           />
-          <button className="JokeList-getmore">New Jokes</button>
+          <button className="JokeList-getmore" onClick={this.handleClick}>
+            New Jokes
+          </button>
         </div>
 
         <div className="JokeList-jokes">
